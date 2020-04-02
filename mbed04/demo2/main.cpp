@@ -15,14 +15,11 @@ int main()
     uLCD.printf("\n 106000107\n"); //Default Green on black text
     uLCD.text_width(4); //4X size text
     uLCD.text_height(4);
-    
+    uLCD.textbackground_color(0xFFFFFF);
     uLCD.color(GREEN);
     for (int i=30; i>=0; --i) {
         uLCD.locate(1,2);
         uLCD.printf("%2D",i);
         wait(1.0);
-        if (i == 0){
-            i=31;
-        }
     }
 }
