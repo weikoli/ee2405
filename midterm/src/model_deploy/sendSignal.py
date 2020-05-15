@@ -5,9 +5,72 @@ import time
 waitTime = 0.1
 
 # generate the waveform table
-signalLength = 1024
-t = np.linspace(0, 2*np.pi, signalLength)
-signalTable = (np.sin(t) + 1.0) / 2.0
+song = np.array(
+    [
+        261, 261, 392, 392, 440, 440, 392,
+        349, 349, 330, 330, 294, 294, 261,
+        392, 392, 349, 349, 330, 330, 294,
+        392, 392, 349, 349, 330, 330, 294,
+        261, 261, 392, 392, 440, 440, 392,
+        349, 349, 330, 330, 294, 294, 261,
+        0,0,0,0,0,0,0,
+
+        392, 330, 330,
+        349, 294, 294,
+        261, 294, 330, 349, 392, 392, 392,
+        392, 330, 330,
+        349, 294, 294,
+        261, 330, 392, 392, 330,
+        294, 294, 294, 294, 294, 330, 349,
+        330, 330, 330, 330, 330, 349, 392,
+        392, 330, 330, 
+        349, 294, 294,
+        261, 330, 392, 392, 261,
+
+
+        261, 261, 294, 261, 349, 330,
+        261, 261, 294, 261, 392, 349,
+        261, 261, 523, 440, 349, 330,
+        349, 349, 330, 261, 294, 261,
+        261, 261, 294, 261, 349, 330,
+        261, 261, 294, 261, 392, 349,
+        261, 261, 523, 440, 349, 330,
+        349, 349, 330, 261, 294, 261,
+        0
+    ]
+)
+length = np.array(
+  [
+        1, 1, 1, 1, 1, 1, 2,
+        1, 1, 1, 1, 1, 1, 2,
+        1, 1, 1, 1, 1, 1, 2,
+        1, 1, 1, 1, 1, 1, 2,
+        1, 1, 1, 1, 1, 1, 2,
+        1, 1, 1, 1, 1, 1, 2,
+        0, 0, 0, 0, 0, 0, 0,
+  
+        1, 1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 3,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 3,
+
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        0
+  ]
+)
+song = song / 1000
+length = length / 1000
 
 # output formatter
 formatter = lambda x: "%.3f" % x
@@ -16,9 +79,13 @@ formatter = lambda x: "%.3f" % x
 serdev = '/dev/ttyACM0'
 s = serial.Serial(serdev)
 print("Sending signal ...")
-print("It may take about %d seconds ..." % (int(signalLength * waitTime)))
-for data in signalTable:
-  s.write(bytes(formatter(data), 'UTF-8'))
-  time.sleep(waitTime)
+print("It may take some time ..." )
+for data in song:
+    s.write(bytes(formatter(data), 'UTF-8'))
+    time.sleep(waitTime)
+for data in length:
+    s.write(bytes(formatter(data), 'UTF-8'))
+    time.sleep(waitTime)
+    
 s.close()
 print("Signal sended")
