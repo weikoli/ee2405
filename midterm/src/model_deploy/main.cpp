@@ -82,9 +82,9 @@ void playNote(int freq)
     waveform[i] = (int16_t) (sin((double)i * 2. * M_PI/(double) (kAudioSampleFrequency / freq)) * ((1<<16) - 1));
   }
   // the loop below will play the note for the duration of 1s
- // for(int j = 0; j < kAudioSampleFrequency / kAudioTxBufferSize; ++j) {
+  for(int j = 0; j < kAudioSampleFrequency / kAudioTxBufferSize; ++j) {
     audio.spk.play(waveform, kAudioTxBufferSize);
-  //}
+  }
 }
 void playing1(){
  // while(true) {
@@ -138,112 +138,27 @@ void playing1(){
 void playing(){
   int n;
   uLCD.cls();
-  uLCD.printf("\n Now playing\n");
-  uLCD.printf("\n %s\n", song_name[song]);
+  if(!game){
+    uLCD.printf("\n Now playing\n");
+    uLCD.printf("\n %s\n", song_name[song]);
+  }
   for(n = 0; n < 49; n++) {
       int length = noteLength[song][n];
-      if (game) {
-        uLCD.cls();
-        uLCD.printf("\n BEAT : %d\n", noteLength[song][n]);
-      }
-
       while (length--){
         for(int j = 0; j < kAudioSampleFrequency / kAudioTxBufferSize; ++j) {
           playNote(song_note[song][n]);
         }
-      }
+      }   
       
       if (mode_selection){
           game = false;
           break;
       }
-    wait_us(500000);
-    if (game){
-        t1.start();
-        while(t1.read()<0.73){
-            //gesture_index = 0;
-            while(true){
-                got_data = ReadAccelerometer(error_reporter, model_input->data.f,
-                                              input_length, should_clear_buffer);
-
-              
-              if (!got_data) {
-                should_clear_buffer = false;
-                continue;
-              }
-
-              // Run inference, and report any error
-              TfLiteStatus invoke_status = interpreter->Invoke();
-              if (invoke_status != kTfLiteOk) {
-                error_reporter->Report("Invoke failed on index: %d\n", begin_index);
-                continue;
-              }
-
-              // Analyze the results to obtain a prediction
-              gesture_index = PredictGesture(interpreter->output(0)->data.f);
-
-              // Clear the buffer next time we read data
-              should_clear_buffer = gesture_index < label_num;
-              //uLCD.printf("\n value: %d\n", gesture_index);
-              if (gesture_index < label_num){
-                  beat[n] = 1;
-              } 
-              uLCD.printf("my beat : %d\n", beat[n]);  
-            }
-        }
-        t1.reset();
-    }
-
-  }
-  if (game){
     
-    for (int i; i < 49 ; i++){
-      if (beat[i] == noteLength[song][n]){
-          score ++;
-      }
-    }
-    uLCD.cls();
-    wait_us(1000000);
-    uLCD.printf("\n Total Score: %d\n", score);
-      game = false;
-  }
-  
 
-    
+  } 
 }
-int taiko(){
 
-    //gesture_index = 0;
-    while(true){
-        got_data = ReadAccelerometer(error_reporter, model_input->data.f,
-                                      input_length, should_clear_buffer);
-
-      
-      if (!got_data) {
-        should_clear_buffer = false;
-        continue;
-      }
-
-      // Run inference, and report any error
-      TfLiteStatus invoke_status = interpreter->Invoke();
-      if (invoke_status != kTfLiteOk) {
-        error_reporter->Report("Invoke failed on index: %d\n", begin_index);
-        continue;
-      }
-
-      // Analyze the results to obtain a prediction
-      gesture_index = PredictGesture(interpreter->output(0)->data.f);
-
-      // Clear the buffer next time we read data
-      should_clear_buffer = gesture_index < label_num;
-      //uLCD.printf("\n value: %d\n", gesture_index);
-      if (gesture_index < label_num){
-          return 1;
-      }else return 0;
-        
-    }
-
-}
 int main(int argc, char* argv[]) {
   greenLED = 1;
   uLCD.printf("\n Mode 0 : \n");  
@@ -422,13 +337,74 @@ static tflite::MicroOpResolver<6> micro_op_resolver;
             else if (song == 2)
               uLCD.printf("\n No.3\n");
           }
-          if (t){
-              game = true;
-              for (int i = 0; i < 49; i ++){
-                  beat[i]= 0;
-              }
-          }
+          //uLCD.printf("\n gesture_index : %d\n",gesture_index);
+          //wait_us(5000000);
+          
       }
+    }
+    else if (mode == 4){
+      if (t){
+        int score = 0;
+        game = true;
+        for (int i = 0; i < 49; i ++){
+            beat[i]= 0;
+        }
+        t = false;
+        
+        for (int n = 0 ; n <49; n++){
+                        
+                //int length = noteLength[song][n];
+
+                //while (length--){
+                  //for(int j = 0; j < kAudioSampleFrequency / kAudioTxBufferSize; ++j) {
+                
+          playNote(song_note[song][n]);
+          uLCD.cls();
+          uLCD.printf("\n BEAT : %d\n", noteLength[song][n]);      
+          t1.start();
+          wait_us(500000);
+          t1.reset();
+          t1.start();
+                
+          while(t1.read()<0.73){
+            
+                got_data = ReadAccelerometer(error_reporter, model_input->data.f,
+                                                input_length, should_clear_buffer);                     
+                if (!got_data) {
+                  should_clear_buffer = false;
+                  continue;
+                }
+
+                // Run inference, and report any error
+                TfLiteStatus invoke_status = interpreter->Invoke();
+                if (invoke_status != kTfLiteOk) {
+                  error_reporter->Report("Invoke failed on index: %d\n", begin_index);
+                  continue;
+                }
+
+                // Analyze the results to obtain a prediction
+                gesture_index = PredictGesture(interpreter->output(0)->data.f);
+
+                // Clear the buffer next time we read data
+                should_clear_buffer = gesture_index < label_num;
+                //uLCD.printf("\n value: %d\n", gesture_index);
+                if (gesture_index < label_num){
+                    beat[n] = 1;
+                } 
+                  
+                if (beat[n] == noteLength[song][n])
+                  score ++ ;
+                
+              //}
+          }
+          uLCD.printf("my beat : %d\n", beat[n]);
+          t1.reset(); 
+          if (mode_selection)
+              break;      
+        }
+        wait_us(500000);
+        uLCD.printf("\n Total score: %d\n",score/15);
+       }
     }
     else{
       if (start){
@@ -444,19 +420,10 @@ static tflite::MicroOpResolver<6> micro_op_resolver;
                 backward();
                 wait_us(3000000);
             }
-            // else if (mode == 4){
-            //     uLCD.cls();
-            //     uLCD.printf("\n Taiko~~\n");
-            //     game = true;
-            //     for (int i = 0; i < 49; i ++){
-            //         beat[i]=1;
-            //     }
-                
-            // }
           }
       }
       if (!start) playing1();
-      else playing();
+      else if (!t)playing();
       mode = -1;
     }
   }
@@ -469,23 +436,27 @@ void mode_sel(){
   mode = -1;
 }
 void forward(){
-  if (song == 0) song = 2;
-  else if (song == 1) song = 0;
-  else if (song == 2) song = 1;
-}
-void backward(){
   if (song == 0) song = 1;
   else if (song == 1) song = 2;
   else if (song == 2) song = 0;
 }
+void backward(){
+  if (song == 0) song = 2;
+  else if (song == 1) song = 0;
+  else if (song == 2) song = 1;
+}
 void song_sel(){
   mode_selection = false;
-  if (mode == 3) mode = 33;
-  else if (mode == 4){
+  if (mode == 3){
+    t = false;
     mode = 33;
-    t = true;
+  } 
+  else if (mode == 4){
+  //   //mode = 33;
+     t = true;
   }
   else if (mode == 33) {
+    t = false;
     mode = -33;
     //uLCD.printf("\n song number : %d\n", song);
   }
