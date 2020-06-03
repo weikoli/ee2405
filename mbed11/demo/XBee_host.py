@@ -44,34 +44,9 @@ s.write("ATCN\r\n".encode())
 char = s.read(3)
 print("Exit AT mode.")
 print(char.decode())
-
 print("start sending RPC")
+
 while True:
-    # send RPC to remote
-    
-    s.write("/getAddr/run\r".encode())
-    time.sleep(1)
-
+    s.write("/getAcc/run\r".encode())
+    time.sleep(1)    
 s.close()
-# import serial
-# import time
-
-# # XBee setting
-# serdev = '/dev/ttyUSB0'
-# s = serial.Serial(serdev, 9600)
-
-# s.write("+++".encode())
-# s.write("ATMY 0x158\r\n".encode())
-# s.write("ATDL 0x258\r\n".encode())
-# s.write("ATID 0x1\r\n".encode())
-# s.write("ATWR\r\n".encode())
-# s.write("ATMY\r\n".encode())
-# s.write("ATDL\r\n".encode())
-# s.write("ATCN\r\n".encode())
-
-# print("start sending RPC")
-
-# while True:
-#     s.write("/getAcc/run\r".encode())
-#     time.sleep(1)    
-# s.close()
